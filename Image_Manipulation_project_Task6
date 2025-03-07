@@ -1,0 +1,102 @@
+# Start by importing the necessary libraries
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Helper function to display images in Jupyter Notebook
+def display_image(image, title="Image"):
+    plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    plt.title(title)
+    plt.axis('off')
+    plt.show()
+
+# =======================================
+# 1. Basic Image Operations
+# =======================================
+
+# Read an image from file
+img = cv2.imread('Image.jpg')
+
+# Display the image
+display_image(img, 'Original Image')
+
+# Save the image to another file
+cv2.imwrite('output_image.jpg', img)
+
+# Resize the image
+resized_img = cv2.resize(img, (400, 400))
+display_image(resized_img, 'Resized Image')
+
+# Crop the image (cutting a portion of the image)
+cropped_img = img[50:250, 100:300]  # Cropping a region
+display_image(cropped_img, 'Cropped Image')
+
+# Rotate the image by 90 degrees
+rotated_img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+display_image(rotated_img, 'Rotated Image')
+
+# =======================================
+# 2. Image Processing
+# =======================================
+
+# Convert to grayscale
+gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+display_image(gray_img, 'Grayscale Image')
+
+# Thresholding (binary)
+_, threshold_img = cv2.threshold(gray_img, 127, 255, cv2.THRESH_BINARY)
+display_image(threshold_img, 'Thresholded Image')
+
+# Gaussian Blur
+blurred_img = cv2.GaussianBlur(img, (15, 15), 0)
+display_image(blurred_img, 'Blurred Image')
+
+# Edge Detection using Canny
+edges = cv2.Canny(gray_img, 100, 200)
+display_image(edges, 'Canny Edge Detection')
+
+# =======================================
+# 3. Drawing on Images
+# =======================================
+
+# Drawing a line (parameters: start, end, color, thickness)
+line_img = img.copy()
+cv2.line(line_img, (50, 50), (300, 300), (0, 255, 0), 3)
+display_image(line_img, 'Line on Image')
+
+# Drawing a rectangle (parameters: top-left, bottom-right, color, thickness)
+rect_img = img.copy()
+cv2.rectangle(rect_img, (50, 50), (250, 250), (255, 0, 0), 2)
+display_image(rect_img, 'Rectangle on Image')
+
+# Drawing a circle (parameters: center, radius, color, thickness)
+circle_img = img.copy()
+cv2.circle(circle_img, (150, 150), 100, (0, 0, 255), 2)
+display_image(circle_img, 'Circle on Image')
+
+# Adding text (parameters: position, text, font, size, color)
+text_img = img.copy()
+cv2.putText(text_img, 'OpenCV!', (50, 350), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+display_image(text_img, 'Text on Image')
+
+# =======================================
+# 4. Object Detection: Face Detection (Haar Cascades)
+# =======================================
+
+# Load pre-trained face detection classifier (Haar Cascade)
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+# Convert the image to grayscale for face detection
+gray_img_for_face = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# Detect faces in the image
+faces = face_cascade.detectMultiScale(gray_img_for_face, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+# Draw rectangle around faces
+face_img = img.copy()
+for (x, y, w, h) in faces:
+    cv2.rectangle(face_img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+display_image(face_img, 'Face Detection')
+
+cv2.destroyAllWindows()
