@@ -1,0 +1,89 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.preprocessing import StandardScaler
+
+# Load the train and test datasets
+train_df = pd.read_csv('Titanic_train.csv')
+test_df = pd.read_csv('Titanic_test.csv')
+
+# Data Exploration (Optional)
+print(train_df.head())
+print(train_df.info())
+print(train_df.describe())
+
+# Check for missing values
+print(train_df.isnull().sum())
+
+# Drop unnecessary columns (PassengerId, Name, Ticket, etc.)
+train_df.drop(columns=['PassengerId', 'Name', 'Ticket'], inplace=True)
+test_df.drop(columns=['PassengerId', 'Name', 'Ticket'], inplace=True)
+
+# Handle missing values
+train_df['Age'].fillna(train_df['Age'].median(), inplace=True)
+train_df['Embarked'].fillna(train_df['Embarked'].mode()[0], inplace=True)
+
+test_df['Age'].fillna(test_df['Age'].median(), inplace=True)
+test_df['Embarked'].fillna(test_df['Embarked'].mode()[0], inplace=True)
+
+# One-Hot Encoding for categorical variables (Pclass, Sex, Embarked)
+train_df = pd.get_dummies(train_df, columns=['Embarked', 'Sex', 'Pclass'], drop_first=True)
+test_df = pd.get_dummies(test_df, columns=['Embarked', 'Sex', 'Pclass'], drop_first=True)
+
+# Split the dataset into features (X) and target (y)
+X = train_df.drop('Transported', axis=1)  # Features
+y = train_df['Transported']  # Target variable
+
+# Split into training and validation sets (80% train, 20% validation)
+X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Feature Scaling (Optional, RandomForest does not require it but we'll include it)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_valid_scaled = scaler.transform(X_valid)
+
+# Initialize and train the RandomForestClassifier
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)  # Use X_train_scaled if you decided to scale the features
+
+# Make predictions on the validation set
+y_pred = model.predict(X_valid)
+
+# Calculate accuracy and print evaluation metrics
+accuracy = accuracy_score(y_valid, y_pred)
+print(f'Accuracy: {accuracy:.4f}')
+
+# Confusion Matrix
+cm = confusion_matrix(y_valid, y_pred)
+print('Confusion Matrix:')
+print(cm)
+
+# Classification Report
+print('Classification Report:')
+print(classification_report(y_valid, y_pred))
+
+# Preprocess the test dataset (same steps as for the training data)
+test_df['Age'].fillna(test_df['Age'].median(), inplace=True)
+test_df['Embarked'].fillna(test_df['Embarked'].mode()[0], inplace=True)
+test_df = pd.get_dummies(test_df, columns=['Embarked', 'Sex', 'Pclass'], drop_first=True)
+
+# Ensure test data has the same columns as training data
+X_test = test_df
+
+# Make predictions on the test dataset
+y_test_pred = model.predict(X_test)
+
+# Prepare the submission file (including PassengerId and the predicted 'Transported' values)
+submission = pd.DataFrame({
+    'PassengerId': test_df['PassengerId'],
+    'Transported': y_test_pred
+})
+
+# Save the predictions to a CSV file
+submission.to_csv('submission.csv', index=False)
+print("Submission file created: 'submission.csv'")
