@@ -1,0 +1,53 @@
+from flask import Flask, render_template, request
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_iris
+from sklearn.neighbors import KNeighborsClassifier
+import os
+
+# Initialize the Flask application
+app = Flask(__name__, template_folder=os.path.join(os.getcwd(), 'templates'))
+
+# Load the Iris dataset
+iris = load_iris()
+X = pd.DataFrame(iris.data, columns=iris.feature_names)
+y = pd.Series(iris.target)
+
+# Initialize the KNN model
+model = KNeighborsClassifier(n_neighbors=3)
+model.fit(X, y)
+
+# Function to predict the species based on the input features
+def predict_species(sepal_length, sepal_width, petal_length, petal_width):
+    # Prepare the input data
+    input_data = np.array([[sepal_length, sepal_width, petal_length, petal_width]])
+    prediction = model.predict(input_data)
+    
+    # Map the prediction to species name
+    species = iris.target_names[prediction][0]
+    return species
+
+# Define the route for the home page
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    prediction = None
+    error_message = None
+    
+    if request.method == 'POST':
+        try:
+            # Get the input values from the form
+            sepal_length = float(request.form['sepal_length'])
+            sepal_width = float(request.form['sepal_width'])
+            petal_length = float(request.form['petal_length'])
+            petal_width = float(request.form['petal_width'])
+
+            # Get the predicted species
+            prediction = predict_species(sepal_length, sepal_width, petal_length, petal_width)
+
+        except ValueError:
+            error_message = "Invalid input. Please enter numeric values."
+    
+    return render_template('index.html', prediction=prediction, error_message=error_message)
+
+if __name__ == '__main__':
+    app.run(debug=True)
