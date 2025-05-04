@@ -1,0 +1,29 @@
+# Simple QnA Chatbot
+def chatbot():
+    print("Hello! I am a simple chatbot. Ask me a question.")
+    
+    while True:
+        # Get user input
+        user_input = input("You: ").lower()
+        
+        if user_input in ['hi', 'hello', 'hey']:
+            print("Chatbot: Hello! How can I assist you today?")
+        
+        elif user_input in ['how are you', 'how are you doing']:
+            print("Chatbot: I am just a program, but I am doing great! How about you?")
+        
+        elif user_input == 'bye':
+            print("Chatbot: Goodbye! Have a great day!")
+            break
+        
+        elif 'name' in user_input:
+            print("Chatbot: My name is SimpleBot.")
+        
+        elif 'weather' in user_input:
+            print("Chatbot: I am not connected to the internet, so I cannot provide weather information.")
+        
+        else:
+            print("Chatbot: Sorry, I don't understand that question.")
+        
+# Run the chatbot
+chatbot()
